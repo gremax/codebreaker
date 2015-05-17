@@ -2,8 +2,8 @@ module Codebreaker
   class Game
     Attempts = 5
 
-    def initialize(numbers = "")
-      @secret_code = numbers
+    def initialize
+      @secret_code = ""
     end
 
     def start
@@ -11,9 +11,9 @@ module Codebreaker
       @attempts = 0
     end
 
-    def play(numbers)
-      p submit(numbers)
-      if submit(numbers).uniq.first == "+"
+    def play(code)
+      p submit(code)
+      if submit(code).uniq.size == 1 && submit(code).uniq.first == "+"
         win
       else
         lose
@@ -22,23 +22,35 @@ module Codebreaker
 
     private
 
-    def submit(numbers)
-      return "Game not started, use #start" if @secret_code.empty?
-      return "Wrong number of secure digits (#{numbers.to_s.length} for 4)" if numbers.to_s.length < 4 || numbers.to_s.length > 4
-      code = []
-      numbers.to_s.split('').each_with_index do |num, index|
+    def validate(code)
+      if !code.is_a?(String)
+        raise TypeError, "Secure code must be a String"
+      elsif /[0789]+/.match(code)
+        raise ArgumentError, "Secure code should consist of numbers from 1 to 6."
+      elsif code.length < 4
+        raise ArgumentError, "Secure code is too short (#{code.length} for 4)."
+      elsif code.length > 4
+        raise ArgumentError, "Secure code is too long (#{code.length} for 4)."
+      end
+    end
+
+    def submit(code)
+      raise "Game is not started yet, use #start" if @secret_code.empty?
+      validate(code)
+      array = []
+      code.split('').each_with_index do |num, index|
         if @secret_code.include?(num)
-          @secret_code[index].include?(num) ? code << "+" : code << "-"
+          @secret_code[index].include?(num) ? array << "+" : array << "-"
         else
-          code << "*"
+          array << "*"
         end
       end
-      code
+      array
     end
 
     def win
       @secret_code = ""
-      puts "Bingo! You are win!"
+      "Bingo! You are win!"
     end
 
     def lose
@@ -46,7 +58,7 @@ module Codebreaker
         @attempts += 1
       else
         @secret_code = ""
-        puts "You are a loser!\nGame Over!"
+        "You are a loser!\nGame Over!"
       end
     end
   end
