@@ -1,14 +1,9 @@
 module Codebreaker
   class Game
-    Attempts = 5
-
-    def initialize
-      @secret_code = ""
-    end
-
     def start
-      @secret_code = (1..6).to_a.shuffle.first(4).join
-      @attempts = 0
+      @secret_code = (1..6).to_a.sample(4).join
+      @attempts = 5
+      @hint = true
     end
 
     def play(code)
@@ -20,11 +15,22 @@ module Codebreaker
       end
     end
 
+    def hint
+      if @hint
+        @hint = false
+        @secret_code[@array.index("*")] 
+      else
+        "Hint has already been used."
+      end
+    end
+
     private
 
     def validate(code)
       if !code.is_a?(String)
         raise TypeError, "Secure code must be a String"
+      elsif code.to_i == 0
+        raise ArgumentError, "Secure code should consist of numbers only."
       elsif /[0789]+/.match(code)
         raise ArgumentError, "Secure code should consist of numbers from 1 to 6."
       elsif code.length < 4
@@ -37,15 +43,15 @@ module Codebreaker
     def submit(code)
       raise "Game is not started yet, use #start" if @secret_code.empty?
       validate(code)
-      array = []
+      @array = []
       code.split('').each_with_index do |num, index|
         if @secret_code.include?(num)
-          @secret_code[index].include?(num) ? array << "+" : array << "-"
+          @secret_code[index].include?(num) ? @array << "+" : @array << "-"
         else
-          array << "*"
+          @array << "*"
         end
       end
-      array
+      @array
     end
 
     def win
@@ -54,11 +60,11 @@ module Codebreaker
     end
 
     def lose
-      unless @attempts == Attempts
-        @attempts += 1
+      if @attempts == 1
+        @secret_code = ""      
+        return "You are a loser!\nGame Over!"
       else
-        @secret_code = ""
-        "You are a loser!\nGame Over!"
+        @attempts -= 1
       end
     end
   end
