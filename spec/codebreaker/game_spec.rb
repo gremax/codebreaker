@@ -3,38 +3,23 @@ require 'spec_helper'
 module Codebreaker
   describe Game do
     let(:game) { Game.new }
+    before { game.start }
 
     it { is_expected.to respond_to(:start) }
     it { is_expected.to respond_to(:play) }
     it { is_expected.to respond_to(:hint) }
 
     context "#start" do
-      before { game.start }
       subject(:secret_code) { game.instance_variable_get(:@secret_code) }
 
-      it "secret code must be a String" do
-        expect(secret_code).to be_a(String)
-      end
-
-      it "saves secret code" do
-        expect(secret_code).not_to be_empty
-      end
-
-      it "saves 4 numbers secret code" do
-        expect(secret_code).to have_exactly(4).items
-      end
-
-      it "saves secret code with numbers from 1 to 6" do
-        expect(secret_code).to match(/[1-6]+/)
-      end
-
-      it "creates variable fot attempts count" do
-        expect(game.instance_variable_get(:@attempts)).not_to be_zero
-      end
+      it { is_expected.to be_a(String) }
+      it { is_expected.not_to be_empty }
+      it { is_expected.to have_exactly(4).items }
+      it { is_expected.to match(/[1-6]+/) }
+      it { expect(game.instance_variable_get(:@attempts)).not_to be_zero }
     end
 
     context "#submit" do
-      before { game.start }
       subject(:submit) { game.send(:submit, "1234") }
 
       it "raise when game is not started" do
@@ -42,18 +27,11 @@ module Codebreaker
         expect{submit}.to raise_error
       end
 
-      it "returns array" do
-        expect(submit).to be_a(Array)
-      end
-
-      it "returns array with 4 values" do
-        expect(submit).to have_exactly(4).items
-      end
+      it { is_expected.to be_a(Array) }
+      it { is_expected.to have_exactly(4).items }
     end
 
     context "validate code" do
-      before { game.start }
-
       it "contains digits only" do
         expect{game.send(:submit, "abcd")}.to raise_error ArgumentError
       end
@@ -90,7 +68,6 @@ module Codebreaker
     end
 
     context "loses game" do
-      before { game.start }
       subject(:play) { game.play("1234") }
 
       it "attempts count changes by -1" do
@@ -107,10 +84,6 @@ module Codebreaker
       before { game.start; game.play("5231") }
       it "variable should be true" do
         expect(game.instance_variable_get(:@hint)).to eq(true)
-      end
-
-      it "should return one digit of secret code" do
-        expect(game.hint).to be_a(String)
       end
 
       it "should returns exactly hidden digit" do
