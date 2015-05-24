@@ -6,7 +6,7 @@ module Codebreaker
     before { game.start }
 
     it { is_expected.to respond_to(:start) }
-    it { is_expected.to respond_to(:play) }
+    it { is_expected.to respond_to(:submit) }
     it { is_expected.to respond_to(:hint) }
 
     context "#start" do
@@ -15,23 +15,51 @@ module Codebreaker
       it { is_expected.to be_a(String) }
       it { is_expected.not_to be_empty }
       it { is_expected.to have_exactly(4).items }
-      it { is_expected.to match(/[1-6]+/) }
+      it { is_expected.to match(/^[1-6]{4}$/) }
       it { expect(game.instance_variable_get(:@attempts)).not_to be_zero }
     end
 
     context "#submit" do
-      subject(:submit) { game.send(:submit, "1234") }
+      subject(:submit) { game.submit("1234") }
 
-      it "raise when game is not started" do
+      before do
+        allow(game).to receive(:validate)
+        game.instance_variable_set(:@secret_code, "1234")
+      end
+
+      it { is_expected.to be_a(String) }
+      it { is_expected.to have_exactly(4).items }
+
+      it "raises when game is not started" do
         game.instance_variable_set(:@secret_code, '')
         expect{submit}.to raise_error
       end
 
-      it { is_expected.to be_a(Array) }
-      it { is_expected.to have_exactly(4).items }
+      hash = {
+        first: { "1234": "++++", "4321": "----", "1546": "+-", "1564": "++", "5234": "+++" },
+        second: { "1226": "++-", "4221": "+---", "3232": "--", "2323": "+-", "1111": "++--" }
+      }
+
+      hash[:first].each do |h|
+        it "returns #{h[1]} when #{h[0]}" do
+          game.instance_variable_set(:@secret_code, "1234")
+          expect(game.submit(h[0].to_s)).to eq(h[1])
+        end
+      end
+
+      hash[:second].each do |h|
+        it "returns #{h[1]} when #{h[0]}" do
+          game.instance_variable_set(:@secret_code, "1124")
+          expect(game.submit(h[0].to_s)).to eq(h[1])
+        end
+      end
     end
 
     context "validate code" do
+      it "is empty string" do
+        expect{game.send(:submit, "")}.to raise_error ArgumentError
+      end
+
       it "contains digits only" do
         expect{game.send(:submit, "abcd")}.to raise_error ArgumentError
       end
@@ -55,41 +83,33 @@ module Codebreaker
 
     context "wins game" do
       before { game.instance_variable_set(:@secret_code, "4321") }
-      subject(:play) { game.play("4321") }
 
       it "submits the right secret code" do
-        expect(play).to eq("Bingo! You are win!")
-      end
-
-      it "must be stoped" do
-        play
-        expect{game.play("4321")}.to raise_error
+        expect(game.submit("4321")).to eq("++++")
       end
     end
 
     context "loses game" do
-      subject(:play) { game.play("1234") }
+      before { game.instance_variable_set(:@secret_code, "4321") }
 
       it "attempts count changes by -1" do
-        expect{play}.to change{game.instance_variable_get(:@attempts)}.by(-1)
+        expect{game.submit("1234")}.to change{game.instance_variable_get(:@attempts)}.by(-1)
       end
 
-      it "returns a message" do
-        4.times { game.play("1234") }
-        expect(play).to eq("You are a loser!\nGame Over!")
+      it "attempts count should be zero" do
+        5.times { game.submit("1234") }
+        expect(game.instance_variable_get(:@attempts)).to be_zero
       end
     end
 
     context "#hint" do
-      before { game.start; game.play("5231") }
       it "variable should be true" do
         expect(game.instance_variable_get(:@hint)).to eq(true)
       end
 
-      it "should returns exactly hidden digit" do
+      it "should returns a digit" do
         game.instance_variable_set(:@secret_code, "1234")
-        game.play("5231")
-        expect(game.hint).to eq("1")
+        expect(game.instance_variable_set(:@secret_code, "1234").chars).to include(game.hint)
       end
 
       it "should be false after use" do

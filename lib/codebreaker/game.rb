@@ -6,29 +6,43 @@ module Codebreaker
       @hint = true
     end
 
-    def play(code)
-      p submit(code)
-      if submit(code).uniq.size == 1 && submit(code).uniq.first == "+"
-        win
-      else
-        lose
+    def submit(code)
+      raise "Game is not started yet, use #start." if @secret_code.empty?
+      validate(code)
+      exact_count = 0
+      match_count = 0
+      @secret_code.chars.each_with_index do |num, index|
+        if num == code[index]
+          exact_count += 1
+        elsif @secret_code.include?(code[index]) && num != code[index]
+          match_count += 1
+        end
       end
+      guess = "+" * exact_count + "-" * match_count
+
+      if guess.eql?("++++")
+        @secret_code = ""
+      elsif @attempts < 1
+        @secret_code = ""
+        return "Game over"
+      else
+        @attempts -= 1
+      end
+
+      guess
     end
 
     def hint
-      if @hint
-        @hint = false
-        @secret_code[@array.index("*")] 
-      else
-        "Hint has already been used."
-      end
+      return "Hint has already been used." unless @hint
+      @hint = false
+      @secret_code[rand(0..3)]
     end
 
     private
 
     def validate(code)
       if !code.is_a?(String)
-        raise TypeError, "Secure code must be a String"
+        raise TypeError, "Secure code must be a String."
       elsif code.to_i == 0
         raise ArgumentError, "Secure code should consist of numbers only."
       elsif /[0789]+/.match(code)
@@ -37,34 +51,6 @@ module Codebreaker
         raise ArgumentError, "Secure code is too short (#{code.length} for 4)."
       elsif code.length > 4
         raise ArgumentError, "Secure code is too long (#{code.length} for 4)."
-      end
-    end
-
-    def submit(code)
-      raise "Game is not started yet, use #start" if @secret_code.empty?
-      validate(code)
-      @array = []
-      code.split('').each_with_index do |num, index|
-        if @secret_code.include?(num)
-          @secret_code[index].include?(num) ? @array << "+" : @array << "-"
-        else
-          @array << "*"
-        end
-      end
-      @array
-    end
-
-    def win
-      @secret_code = ""
-      "Bingo! You are win!"
-    end
-
-    def lose
-      if @attempts == 1
-        @secret_code = ""      
-        return "You are a loser!\nGame Over!"
-      else
-        @attempts -= 1
       end
     end
   end
