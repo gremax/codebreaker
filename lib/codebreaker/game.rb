@@ -2,8 +2,9 @@ module Codebreaker
   class Game
     def start
       @secret_code = (1..6).to_a.sample(4).join
-      @attempts = 5
+      @attempts = 10
       @hint = true
+      @start_at = Time.now
     end
 
     def submit(code)
@@ -20,11 +21,10 @@ module Codebreaker
       end
       guess = "+" * exact_count + "-" * match_count
 
-      if guess.eql?("++++")
+      if guess.eql?("++++") || @attempts < 1
         @secret_code = ""
-      elsif @attempts < 1
-        @secret_code = ""
-        return "Game over"
+        @finish_at = Time.now
+        return "Game over" if @attempts < 1
       else
         @attempts -= 1
       end
@@ -36,6 +36,19 @@ module Codebreaker
       return "Hint has already been used." unless @hint
       @hint = false
       @secret_code[rand(0..3)]
+    end
+
+    def cheat
+      @secret_code
+    end
+
+    def save(username)
+      Score.save(Score.new(username, @attempts, @start_at, @finish_at))
+      puts "#{username} / Attempts: #{5 - @attempts} / Time: #{(@finish_at - @start_at).to_i}s."
+    end
+
+    def scores
+      Score.load
     end
 
     private

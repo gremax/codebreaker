@@ -4,7 +4,9 @@ module Codebreaker
   describe Score do
     subject(:user) { described_class.new("Bender Bending Rodríguez", 4, Time.now, Time.now + 120) }
     let(:scores) { described_class.load('tmp/scores_test.db') }
-    after(:all) { File.delete('tmp/scores_test.db') }
+    after(:all) do
+      File.delete('tmp/scores_test.db') if File.exists?('tmp/scores_test.db')
+    end
 
     it { is_expected.to respond_to(:username) }
     it { is_expected.to respond_to(:attempts) }

@@ -8,6 +8,8 @@ module Codebreaker
     it { is_expected.to respond_to(:start) }
     it { is_expected.to respond_to(:submit) }
     it { is_expected.to respond_to(:hint) }
+    it { is_expected.to respond_to(:save) }
+    it { is_expected.to respond_to(:scores) }
 
     context "#start" do
       subject(:secret_code) { game.instance_variable_get(:@secret_code) }
@@ -85,7 +87,13 @@ module Codebreaker
       before { game.instance_variable_set(:@secret_code, "4321") }
 
       it "submits the right secret code" do
+        game.instance_variable_set(:@secret_code, "4321")
         expect(game.submit("4321")).to eq("++++")
+      end
+
+      it "secret code should be empty" do
+        game.submit("4321")
+        expect(game.instance_variable_get(:@secret_code)).to eq("")
       end
     end
 
@@ -97,7 +105,7 @@ module Codebreaker
       end
 
       it "attempts count should be zero" do
-        5.times { game.submit("1234") }
+        game.instance_variable_get(:@attempts).times { game.submit("1234") }
         expect(game.instance_variable_get(:@attempts)).to be_zero
       end
     end

@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+require "bundler/setup"
+require "codebreaker"
+require "colorize"
+
+game = Codebreaker::Game.new
+game.start
+
+puts "Welcome to Codebreaker logic game!\nPress 'start' for new game.".blue
+
+loop do
+  puts "\nEnter guess (? for help):"
+  guess = gets.chomp
+
+  case guess
+  when "?"
+    puts "Available commands:"
+    puts "about".bold + " - game tactics description."
+    puts "hint".bold + "  - one of the numbers in the secret code."
+    puts "start".bold + " - begin new game or restart exists game."
+    puts "scores".bold + " - all scores."
+    puts "Press " + "Return".bold + " for quit."
+  when "about"
+    puts "Codebreaker".bold + " is a logic game in which a code-breaker tries to break a secret code created by a code-maker. The code-maker, which will be played by the application we’re going to write, creates a secret code of four numbers between 1 and 6."
+    puts "The code-breaker then gets some number of chances to break the code. In each turn, the code-breaker makes a guess of four numbers. The code-maker then marks the guess with up to four + and - signs."
+    puts "A + indicates an exact match: one of the numbers in the guess is the same as one of the numbers in the secret code and in the same position."
+    puts "A - indicates a number match: one of the numbers in the guess is the same as one of the numbers in the secret code but in a different position."
+  when "hint"
+    puts game.hint.blue
+  when "start"
+    game.start
+  when "idkfa"
+    puts game.cheat.blue
+  when "scores"
+    game.scores.each do |s|
+      puts "#{s.username.blue} / Attempts: #{(5 - s.attempts).to_s.blue} / Time: #{(s.finish_at - s.start_at).to_i}s."
+    end
+  when ""
+    exit
+  else
+    begin
+      submit = game.submit(guess)
+    rescue Exception => e
+      puts e
+      next
+    end
+    puts submit.green
+
+    if submit == "Game over" || submit == "++++"
+      puts "\nSave your score? (y/n)"
+      case gets.chomp
+      when "y"
+        puts "Enter username:"
+        game.save(gets.chomp)
+      end
+
+      puts "\nRestart Codebreaker? (y/n)"
+      case gets.chomp
+      when "y"
+        game.start
+      when "n"
+        puts "Bye!".light_black
+        exit
+      end
+    end
+  end
+end
