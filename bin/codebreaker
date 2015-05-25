@@ -3,10 +3,12 @@ require "bundler/setup"
 require "codebreaker"
 require "colorize"
 
-game = Codebreaker::Game.new
+Attempts = 10
+
+game = Codebreaker::Game.new(Attempts)
 game.start
 
-puts "Welcome to Codebreaker logic game!\nPress 'start' for new game.".blue
+puts "Welcome to Codebreaker logic game!\nType 'start' for a new game.".blue
 
 loop do
   puts "\nEnter guess (? for help):"
@@ -15,9 +17,9 @@ loop do
   case guess
   when "?"
     puts "Available commands:"
-    puts "about".bold + " - game tactics description."
-    puts "hint".bold + "  - one of the numbers in the secret code."
-    puts "start".bold + " - begin new game or restart exists game."
+    puts "about".bold + "  - game tactics description."
+    puts "hint".bold + "   - one of the numbers in the secret code."
+    puts "start".bold + "  - begin new game or restart exists game."
     puts "scores".bold + " - all scores."
     puts "Press " + "Return".bold + " for quit."
   when "about"
@@ -32,15 +34,20 @@ loop do
   when "idkfa"
     puts game.cheat.blue
   when "scores"
-    game.scores.each do |s|
-      puts "#{s.username.blue} / Attempts: #{(5 - s.attempts).to_s.blue} / Time: #{(s.finish_at - s.start_at).to_i}s."
+    begin
+      puts "Score table:".underline
+      game.scores.each do |s|
+        puts "/ #{s.username.blue} / Attempts: #{s.attempts} / Time: #{(s.finish_at - s.start_at).to_i}s."
+      end
+    rescue => e
+      puts e
     end
   when ""
     exit
   else
     begin
       submit = game.submit(guess)
-    rescue Exception => e
+    rescue => e
       puts e
       next
     end

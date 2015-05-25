@@ -3,9 +3,9 @@ require 'spec_helper'
 module Codebreaker
   describe Score do
     subject(:user) { described_class.new("Bender Bending Rodríguez", 4, Time.now, Time.now + 120) }
-    let(:scores) { described_class.load('tmp/scores_test.db') }
+    let(:scores) { described_class.load('scores_test.db') }
     after(:all) do
-      File.delete('tmp/scores_test.db') if File.exists?('tmp/scores_test.db')
+      File.delete('scores_test.db') if File.exists?('scores_test.db')
     end
 
     it { is_expected.to respond_to(:username) }
@@ -22,11 +22,11 @@ module Codebreaker
     end
 
     context ".save" do
-      before { described_class.save(user, 'tmp/scores_test.db') }
-      let(:scores) { described_class.load('tmp/scores_test.db') }
+      before { described_class.save(user, 'scores_test.db') }
+      let(:scores) { described_class.load('scores_test.db') }
 
       it "user scores to a file" do
-        expect(File).to exist('tmp/scores_test.db')
+        expect(File).to exist('scores_test.db')
       end
 
       it "new user score to an exist file" do
@@ -41,6 +41,10 @@ module Codebreaker
 
       it "attempts from a file" do
         expect(scores.first.attempts).to eq(4)
+      end
+
+      it "file not found" do
+        expect{described_class.load('bender.db')}.to raise_error
       end
     end
   end

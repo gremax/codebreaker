@@ -1,8 +1,12 @@
 module Codebreaker
   class Game
+    def initialize(attempts = 10)
+      @attempts = attempts
+    end
+
     def start
-      @secret_code = (1..6).to_a.sample(4).join
-      @attempts = 10
+      @secret_code = (0..3).map{rand(1..6)}.join
+      @attempts_remain = @attempts
       @hint = true
       @start_at = Time.now
     end
@@ -21,12 +25,12 @@ module Codebreaker
       end
       guess = "+" * exact_count + "-" * match_count
 
-      if guess.eql?("++++") || @attempts < 1
+      if guess.eql?("++++") || @attempts_remain < 1
         @secret_code = ""
         @finish_at = Time.now
-        return "Game over" if @attempts < 1
+        return "Game over" if @attempts_remain < 1
       else
-        @attempts -= 1
+        @attempts_remain -= 1
       end
 
       guess
@@ -43,11 +47,11 @@ module Codebreaker
     end
 
     def save(username)
-      Score.save(Score.new(username, @attempts, @start_at, @finish_at))
-      puts "#{username} / Attempts: #{5 - @attempts} / Time: #{(@finish_at - @start_at).to_i}s."
+      Score.save(Score.new(username, @attempts_remain, @start_at, @finish_at))
+      puts "/ #{username} / Attempts: #{@attempts_remain} / Time: #{(@finish_at - @start_at).to_i}s."
     end
 
-    def scores
+    def scores(file='scores.db')
       Score.load
     end
 

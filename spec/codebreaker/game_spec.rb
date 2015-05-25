@@ -18,7 +18,7 @@ module Codebreaker
       it { is_expected.not_to be_empty }
       it { is_expected.to have_exactly(4).items }
       it { is_expected.to match(/^[1-6]{4}$/) }
-      it { expect(game.instance_variable_get(:@attempts)).not_to be_zero }
+      it { expect(game.instance_variable_get(:@attempts_remain)).not_to be_zero }
     end
 
     context "#submit" do
@@ -59,27 +59,27 @@ module Codebreaker
 
     context "validate code" do
       it "is empty string" do
-        expect{game.send(:submit, "")}.to raise_error ArgumentError
+        expect{game.submit("")}.to raise_error ArgumentError
       end
 
       it "contains digits only" do
-        expect{game.send(:submit, "abcd")}.to raise_error ArgumentError
+        expect{game.submit("abcd")}.to raise_error ArgumentError
       end
 
       it "is not a String" do
-        expect{game.send(:submit, 1234)}.to raise_error TypeError
+        expect{game.submit(1234)}.to raise_error TypeError
       end
 
       it "is too short" do
-        expect{game.send(:submit, "123")}.to raise_error ArgumentError
+        expect{game.submit("123")}.to raise_error ArgumentError
       end
 
       it "is too long" do
-        expect{game.send(:submit, "12345")}.to raise_error ArgumentError
+        expect{game.submit("12345")}.to raise_error ArgumentError
       end
 
       it "contains (1..6) digits only" do
-        expect{game.send(:submit, "7890")}.to raise_error ArgumentError
+        expect{game.submit("7890")}.to raise_error ArgumentError
       end
     end
 
@@ -101,12 +101,12 @@ module Codebreaker
       before { game.instance_variable_set(:@secret_code, "4321") }
 
       it "attempts count changes by -1" do
-        expect{game.submit("1234")}.to change{game.instance_variable_get(:@attempts)}.by(-1)
+        expect{game.submit("1234")}.to change{game.instance_variable_get(:@attempts_remain)}.by(-1)
       end
 
       it "attempts count should be zero" do
-        game.instance_variable_get(:@attempts).times { game.submit("1234") }
-        expect(game.instance_variable_get(:@attempts)).to be_zero
+        game.instance_variable_get(:@attempts_remain).times { game.submit("1234") }
+        expect(game.instance_variable_get(:@attempts_remain)).to be_zero
       end
     end
 

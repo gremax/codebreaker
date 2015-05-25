@@ -9,20 +9,20 @@ module Codebreaker
       @finish_at = finish_at
     end
 
-    def self.save(score, file='tmp/scores.db')
-      if File.exists?(file)
-        all_scores = Marshal.load(File.open(file))
+    def self.save(score, file='scores.db')
+      all_scores = if File.exists?(file)
+         Marshal.load(File.open(file))
       else
-        all_scores = []
+        []
       end
       File.write(file, Marshal.dump(all_scores << score))
     end
 
-    def self.load(file='tmp/scores.db')
+    def self.load(file='scores.db')
       if File.exists?(file)
         all_scores = Marshal.load(File.open(file))
       else
-        "File '#{file}' not found."
+        raise ArgumentError, "File '#{file}' not found."
       end
     end
 
