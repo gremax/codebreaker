@@ -16,7 +16,71 @@ And then execute:
 
 ## Usage
 
-TODO: Write usage instructions here
+Start an example console game:
+
+    $ bundle --binstubs
+    $ bundle exec bin/codebreaker
+
+Or write own:
+
+```ruby
+require "bundler/setup"
+require "codebreaker"
+
+Attempts = 10
+
+game = Codebreaker::Game.new(Attempts)
+game.start
+
+loop do
+  puts "\nEnter guess (? for help):"
+  guess = gets.chomp
+
+  case guess
+  when "hint"
+    puts game.hint
+  when "start"
+    game.start
+  when "scores"
+    begin
+      puts "Score table:".underline
+      game.scores.each do |s|
+        puts "/ #{s.username} / Attempts: #{s.attempts} / Time: #{(s.finish_at - s.start_at).to_i}s."
+      end
+    rescue => e
+      puts e
+    end
+  when ""
+    exit
+  else
+    begin
+      submit = game.submit(guess)
+    rescue => e
+      puts e
+      next
+    end
+    puts submit
+
+    if submit == "Game over" || submit == "++++"
+      puts "\nSave your score? (y/n)"
+      case gets.chomp
+      when "y"
+        puts "Enter username:"
+        game.save(gets.chomp)
+      end
+
+      puts "\nRestart Codebreaker? (y/n)"
+      case gets.chomp
+      when "y"
+        game.start
+      when "n"
+        puts "Bye!"
+        exit
+      end
+    end
+  end
+end
+```
 
 ## Tests
 
@@ -26,9 +90,18 @@ Or
 
     $ bundle exec rake
 
+## Rake
+
+     $ rake -T db
+
+```bash
+rake db:remove  # Remove database file
+rake db:reset   # Reset database
+```
+
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/codebreaker/fork )
+1. Fork it ( https://github.com/gremax/codebreaker/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
