@@ -14,16 +14,9 @@ module Codebreaker
     def submit(code)
       raise "Game is not started yet, use #start." if @secret_code.empty?
       validate(code)
-      exact_count = 0
-      match_count = 0
-      @secret_code.chars.each_with_index do |num, index|
-        if num == code[index]
-          exact_count += 1
-        elsif @secret_code.include?(code[index]) && num != code[index]
-          match_count += 1
-        end
-      end
-      guess = "+" * exact_count + "-" * match_count
+      guess = ""
+      secret_new = @secret_code.chars.zip(code.chars).delete_if {|v1,v2| guess << "+" if v1 == v2}
+      secret_new.transpose.first.each {|value| guess << "-" if secret_new.transpose.last.include?(value)} unless secret_new.empty?
 
       if guess.eql?("++++") || @attempts_remain < 1
         @secret_code = ""
@@ -39,7 +32,7 @@ module Codebreaker
     def hint
       return "Hint has already been used." unless @hint
       @hint = false
-      @secret_code[rand(0..3)]
+      @secret_code.chars.sample
     end
 
     def cheat

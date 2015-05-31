@@ -37,23 +37,60 @@ module Codebreaker
         expect{submit}.to raise_error
       end
 
-      hash = {
-        first: { "1234": "++++", "4321": "----", "1546": "+-", "1564": "++", "5234": "+++" },
-        second: { "1226": "++-", "4221": "+---", "3232": "--", "2323": "+-", "1111": "++--" }
-      }
+      array = [
+        ["1234", "5656", ""    ],
+        ["1234", "1234", "++++"],
+        ["1234", "1243", "++--"],
+        ["1234", "1324", "++--"],
+        ["1234", "1342", "+---"],
+        ["1234", "1423", "+---"],
+        ["1234", "1432", "++--"],
+        ["1234", "2134", "++--"],
+        ["1234", "2143", "----"],
+        ["1234", "2314", "+---"],
+        ["1234", "2341", "----"],
+        ["1234", "2413", "----"],
+        ["1234", "2431", "+---"],
+        ["1234", "3124", "+---"],
+        ["1234", "3142", "----"],
+        ["1234", "3214", "++--"],
+        ["1234", "3241", "+---"],
+        ["1234", "3412", "----"],
+        ["1234", "3421", "----"],
+        ["1234", "4123", "----"],
+        ["1234", "4132", "+---"],
+        ["1234", "4213", "+---"],
+        ["1234", "4231", "++--"],
+        ["1234", "4312", "----"],
+        ["1234", "4321", "----"],
+        ["1234", "1546", "+-"  ],
+        ["1234", "1564", "++"  ],
+        ["1234", "5234", "+++" ],
+        ["1124", "1226", "++"  ],
+        ["1335", "3346", "+-"  ]
+      ]
 
-      hash[:first].each do |h|
-        it "returns #{h[1]} when #{h[0]}" do
-          game.instance_variable_set(:@secret_code, "1234")
-          expect(game.submit(h[0].to_s)).to eq(h[1])
+      descr = %Q(returns [%s] when submits %s with the secret code %s)
+
+      array.each do |a|
+        it descr % [a[2].ljust(4), a[1], a[0]] do
+          game.instance_variable_set(:@secret_code, a[0])
+          expect(game.submit(a[1])).to eq(a[2])
         end
       end
 
-      hash[:second].each do |h|
-        it "returns #{h[1]} when #{h[0]}" do
-          game.instance_variable_set(:@secret_code, "1124")
-          expect(game.submit(h[0].to_s)).to eq(h[1])
-        end
+      it "attempts count should be zero when lose" do
+        game.instance_variable_get(:@attempts_remain).times { game.submit("4321") }
+        expect(game.instance_variable_get(:@attempts_remain)).to be_zero
+      end
+
+      it "attempts count changes by -1" do
+        expect{game.submit("4321")}.to change{game.instance_variable_get(:@attempts_remain)}.by(-1)
+      end
+
+      it "secret code should be empty after win" do
+        game.submit("1234")
+        expect(game.instance_variable_get(:@secret_code)).to eq("")
       end
     end
 
@@ -83,36 +120,9 @@ module Codebreaker
       end
     end
 
-    context "wins game" do
-      before { game.instance_variable_set(:@secret_code, "4321") }
-
-      it "submits the right secret code" do
-        game.instance_variable_set(:@secret_code, "4321")
-        expect(game.submit("4321")).to eq("++++")
-      end
-
-      it "secret code should be empty" do
-        game.submit("4321")
-        expect(game.instance_variable_get(:@secret_code)).to eq("")
-      end
-    end
-
-    context "loses game" do
-      before { game.instance_variable_set(:@secret_code, "4321") }
-
-      it "attempts count changes by -1" do
-        expect{game.submit("1234")}.to change{game.instance_variable_get(:@attempts_remain)}.by(-1)
-      end
-
-      it "attempts count should be zero" do
-        game.instance_variable_get(:@attempts_remain).times { game.submit("1234") }
-        expect(game.instance_variable_get(:@attempts_remain)).to be_zero
-      end
-    end
-
     context "#hint" do
-      it "variable should be true" do
-        expect(game.instance_variable_get(:@hint)).to eq(true)
+      it "should have a 'true' variable" do
+        expect(game.instance_variable_get(:@hint)).to be_truthy
       end
 
       it "should returns a digit" do
@@ -120,12 +130,12 @@ module Codebreaker
         expect(game.instance_variable_set(:@secret_code, "1234").chars).to include(game.hint)
       end
 
-      it "should be false after use" do
+      it "should be 'false' after use" do
         game.hint
-        expect(game.instance_variable_get(:@hint)).to eq(false)
+        expect(game.instance_variable_get(:@hint)).to be_falsey
       end
 
-      it "should returns a message after use" do
+      it "should return a message after use" do
         game.hint
         expect(game.hint).to match(/already been used/)
       end
