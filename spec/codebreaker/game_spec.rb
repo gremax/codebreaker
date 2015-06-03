@@ -63,11 +63,13 @@ module Codebreaker
         ["1234", "4231", "++--"],
         ["1234", "4312", "----"],
         ["1234", "4321", "----"],
+        ["1234", "5111", "-"   ],
         ["1234", "1546", "+-"  ],
         ["1234", "1564", "++"  ],
         ["1234", "5234", "+++" ],
         ["1124", "1226", "++"  ],
-        ["1335", "3346", "+-"  ]
+        ["1335", "3346", "+-"  ],
+        ["1244", "4421", "----"]
       ]
 
       descr = %Q(returns [%s] when submits %s with the secret code %s)
@@ -99,6 +101,10 @@ module Codebreaker
         expect{game.submit("")}.to raise_error ArgumentError
       end
 
+      it "contains spaces" do
+        expect{game.submit("1 23")}.to raise_error ArgumentError
+      end
+
       it "contains digits only" do
         expect{game.submit("abcd")}.to raise_error ArgumentError
       end
@@ -121,23 +127,17 @@ module Codebreaker
     end
 
     context "#hint" do
-      it "should have a 'true' variable" do
-        expect(game.instance_variable_get(:@hint)).to be_truthy
+      it "should have a nil variable" do
+        expect(game.instance_variable_get(:@hint)).to be_nil
       end
 
-      it "should returns a digit" do
+      it "should return a digit" do
         game.instance_variable_set(:@secret_code, "1234")
-        expect(game.instance_variable_set(:@secret_code, "1234").chars).to include(game.hint)
+        expect(game.hint).to match(/^\*{0,3}[1-6]\*{0,3}$/)
       end
 
-      it "should be 'false' after use" do
-        game.hint
-        expect(game.instance_variable_get(:@hint)).to be_falsey
-      end
-
-      it "should return a message after use" do
-        game.hint
-        expect(game.hint).to match(/already been used/)
+      it "should return the same hint after reuse" do
+        expect(game.hint).to eq(game.hint)
       end
     end
   end

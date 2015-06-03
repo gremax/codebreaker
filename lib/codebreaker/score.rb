@@ -9,7 +9,7 @@ module Codebreaker
       @finish_at = finish_at
     end
 
-    def self.save(score, file='scores.db')
+    def self.save(score, file = 'scores.db')
       all_scores = if File.exists?(file)
          Marshal.load(File.open(file))
       else
@@ -18,7 +18,7 @@ module Codebreaker
       File.write(file, Marshal.dump(all_scores << score))
     end
 
-    def self.load(file='scores.db')
+    def self.load(file = 'scores.db')
       if File.exists?(file)
         all_scores = Marshal.load(File.open(file))
       else

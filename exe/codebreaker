@@ -3,9 +3,9 @@ require "bundler/setup"
 require "codebreaker"
 require "colorize"
 
-Attempts = 10
+ATTEMPTS = 10
 
-game = Codebreaker::Game.new(Attempts)
+game = Codebreaker::Game.new(ATTEMPTS)
 game.start
 
 puts "Welcome to Codebreaker logic game!\nType 'start' for a new game.".blue
