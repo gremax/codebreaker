@@ -41,6 +41,10 @@ module Codebreaker
       @secret_code
     end
 
+    def started?
+      !@secret_code.empty?
+    end
+
     def save(username, file = 'scores.db')
       raise ArgumentError, "Username can't be blank." if username.length == 0
       attempts = @attempts - @attempts_remain

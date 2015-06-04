@@ -140,5 +140,18 @@ module Codebreaker
         expect(game.hint).to eq(game.hint)
       end
     end
+
+    context "#started?" do
+      before { game.instance_variable_set(:@secret_code, "") }
+
+      it "should be false before the game has been started" do
+        expect(game.started?).to be_falsey
+      end
+
+      it "should be true after the game has been started" do
+        game.start
+        expect(game.started?).to be_truthy
+      end
+    end
   end
 end
